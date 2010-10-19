@@ -229,18 +229,17 @@ class LDAPAuthService implements AuthService, AuthServiceSubgroups {
         $ldap_attr["objectclass"][1] = $attributes->groupObjectClass;
         $ldap_attr[$attributes->groupNameAttr] = $name;
         $ldap_attr[$attributes->groupDescAttr] = $description;
+        $ldap_attr[$attributes->groupMemberAttr] = '';
 
-        if (count($users) > 0) {
+        /* if (count($users) > 0) {
+            $ldap_attr[$attributes->groupMemberAttr] = array();
             foreach ($users as $user) {
                 $userdn = $attributes->usernameAttr . "=" . $user . "," . $attributes->userDN . "," . $attributes->baseDN;
                 $ldap_attr[$attributes->groupMemberAttr][] = $userdn;
             }
-        } else {
-            $ldap_attr[$attributes->groupMemberAttr] = '';
-        }
+        } */
 
         $groupdn = $attributes->groupNameAttr . "=" . $name . "," . $attributes->groupDN . "," . $attributes->baseDN;
-        //print("ldap_add(\$this->ldap_conn, '$groupdn', ".get_a($ldap_attr).")<br />");
         $result = @ldap_add($this->ldap_conn, $groupdn, $ldap_attr);
         return $result;
 
@@ -484,7 +483,7 @@ class LDAPAuthService implements AuthService, AuthServiceSubgroups {
         $results = ldap_search($this->ldap_conn, $dn, $search);
         if ($results !== false) {
             $entries = ldap_get_entries($this->ldap_conn, $results);
-            $entry = $entries[0];
+            $entry = isset($entries[0])?$entries[0]:false;
             if (is_array($entry)) {
                 $username = $entry[$attributes->usernameAttr][0];
                 $email = $entry[$attributes->userEmailAttr][0];
